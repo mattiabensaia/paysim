@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaySim - Benvenuto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .choice-container {
+            display: flex;
+            gap: 2rem;
+            max-width: 900px;
+            width: 90%;
+            z-index: 10;
+        }
+
+        .choice-card {
+            flex: 1;
+            padding: 3rem;
+            text-align: center;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: white;
+        }
+
+        .choice-card:hover {
+            transform: translateY(-15px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(14, 165, 233, 0.2);
+        }
+
+        .choice-card i {
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            color: var(--accent);
+        }
+
+        .choice-card h2 {
+            margin-bottom: 1rem;
+        }
+
+        .choice-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .main-title {
+            position: absolute;
+            top: 5rem;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .main-title h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .main-title p {
+            color: var(--accent);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .choice-container {
+                flex-direction: column;
+                margin-top: 10rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="main-title">
+        <p>Sperimentazione Pagamento Digitale</p>
+        <h1>Scegli il tuo ruolo</h1>
+    </div>
+
+    <div class="choice-container">
+        <a href="pos.html" class="choice-card">
+            <i class="fas fa-desktop"></i>
+            <h2>Usa come Cassa</h2>
+            <p>Ideale per questo computer. Potrai inserire i dati del pagamento e inviare il resto al cliente.</p>
+        </a>
+
+        <a href="wallet.html" class="choice-card">
+            <i class="fas fa-mobile-alt"></i>
+            <h2>Usa come Telefono</h2>
+            <p>Ideale per il tuo smartphone. Visualizzerai il saldo e riceverai il resto istantaneamente.</p>
+        </a>
+    </div>
+</body>
+
+</html>

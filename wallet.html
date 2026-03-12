@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Wallet - PaySim</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .app-container {
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .phone-section {
+            width: 100%;
+            height: 100%;
+            perspective: none;
+        }
+
+        .phone-mockup {
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+            transform: none !important;
+        }
+
+        .phone-screen {
+            border-radius: 0;
+        }
+
+        .notch {
+            display: none;
+        }
+
+        .pairing-overlay {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(30, 41, 59, 0.9);
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: 1px solid var(--accent);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .pairing-code {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .pairing-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <div class="phone-section">
+            <div class="phone-mockup">
+                <div class="phone-screen">
+                    <div class="app-header">
+                        <h3>MyWallet</h3>
+                        <div class="user-greeting">Benvenuto, <span id="displayUserName">Utente</span></div>
+                    </div>
+
+                    <div class="balance-card">
+                        <div class="balance-title">Saldo Disponibile</div>
+                        <div class="balance-amount">€ <span id="walletBalance">12.50</span></div>
+                        <div class="card-chip"></div>
+                    </div>
+
+                    <div class="transactions-section">
+                        <h4>Transazioni Recenti</h4>
+                        <div class="transactions-list" id="transactionList">
+                            <!-- Transactions populated here -->
+                            <div class="transaction-item">
+                                <div class="tx-icon out"><i class="fas fa-shopping-bag"></i></div>
+                                <div class="tx-details">
+                                    <div class="tx-title">Spesa Settimanale</div>
+                                    <div class="tx-time">Oggi, 14:20</div>
+                                </div>
+                                <div class="tx-amount negative">-45.00 €</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pairing Info -->
+                    <div class="pairing-overlay">
+                        <div>
+                            <div class="pairing-label">Codice per Cassa</div>
+                            <div class="pairing-code" id="myPeerId">...</div>
+                        </div>
+                        <div id="connStatus">
+                            <i class="fas fa-circle-notch fa-spin"></i>
+                        </div>
+                    </div>
+
+                    <!-- Notification Overlay -->
+                    <div class="notification-overlay" id="notificationOverlay">
+                        <div class="notification-card">
+                            <div class="notif-icon"><i class="fas fa-bolt"></i></div>
+                            <div class="notif-content">
+                                <h5>Resto Istantaneo!</h5>
+                                <p id="notifSender">Da: Cassa Negozio</p>
+                                <h3 id="notifAmount">+0.00 €</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="wallet.js"></script>
+</body>
+
+</html>
