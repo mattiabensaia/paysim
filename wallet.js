@@ -174,40 +174,49 @@ document.addEventListener('DOMContentLoaded', () => {
                 { facingMode: "environment" },
                 config,
                 (decodedText) => {
-                    // Success! Decoded text should be the URL
                     console.log("[Scanner] QR rilevato:", decodedText);
-                    stopScanner();
 
-                    // Process the URL found in the QR
-                    try {
-                        const url = new URL(decodedText);
-                        let params;
-                        if (url.hash && url.hash.length > 1) {
-                            params = new URLSearchParams(url.hash.substring(1));
-                        } else {
-                            params = new URLSearchParams(url.search);
+                    // Simple param extractor (independent of full URL or relative)
+                    const getParam = (name) => {
+                        const regex = new RegExp(`[#?&]${name}=([^&]*)`);
+                        const match = decodedText.match(regex);
+                        return match ? decodeURIComponent(match[1]) : null;
+                    };
+
+                    const amount = getParam('amount');
+                    const customer = getParam('customer');
+                    const ts = getParam('ts');
+
+                    console.log("[Scanner] Dati estratti:", { amount, customer, ts });
+
+                    if (amount && ts) {
+                        const lastTs = localStorage.getItem('last_payment_ts');
+                        if (ts === lastTs) {
+                            alert("Hai già ricevuto questo pagamento.");
+                            stopScanner();
+                            return;
                         }
 
-                        const amount = params.get('amount');
-                        const customer = params.get('customer');
-                        const ts = params.get('ts');
+                        localStorage.setItem('last_payment_ts', ts);
+                        stopScanner();
 
-                        if (amount && ts) {
-                            processIncomingPayment({
-                                type: 'PAYMENT',
-                                amount: parseFloat(amount),
-                                customer: customer || 'Utente',
-                                sender: 'Scanner App'
-                            });
-                        }
-                    } catch (e) {
-                        console.error("[Scanner] Errore parsing URL:", e);
+                        processIncomingPayment({
+                            type: 'PAYMENT',
+                            amount: parseFloat(amount),
+                            customer: customer || 'Utente',
+                            sender: 'Scanner App'
+                        });
+                    } else if (decodedText.startsWith('mattia-')) {
+                        alert("Attenzione: stai scansionando il Codice Cassa del telefono. Devi scansionare il QR Code generato dal Mac dopo aver cliccato 'Invia Resto'.");
+                    } else {
+                        alert("Codice non riconosciuto. Assicurati di scansionare il QR mostrato sulla Cassa dopo aver cliccato 'Invia Resto'.");
+                        console.error("[Scanner] QR invalido:", decodedText);
                     }
                 }
             );
         } catch (err) {
             console.error("[Scanner] Errore avvio fotocamera:", err);
-            alert("Impossibile accedere alla fotocamera. Verifica i permessi.");
+            alert("Errore fotocamera: " + err.message);
             stopScanner();
         }
     };

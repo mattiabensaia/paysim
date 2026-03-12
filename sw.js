@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paysim-v4';
+const CACHE_NAME = 'paysim-v5';
 const ASSETS_TO_CACHE = [
     '/paysim/',
     '/paysim/wallet.html',
