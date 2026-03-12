@@ -156,4 +156,74 @@ document.addEventListener('DOMContentLoaded', () => {
     checkUrlParams();
     // Also listen for hash changes (in case redirect adds hash after load)
     window.addEventListener('hashchange', checkUrlParams);
+
+    // --- QR Scanner Logic ---
+    const scannerOverlay = document.getElementById('scannerOverlay');
+    const openScannerBtn = document.getElementById('openScannerBtn');
+    const closeScannerBtn = document.getElementById('closeScannerBtn');
+    let html5QrCode;
+
+    const startScanner = async () => {
+        scannerOverlay.style.display = 'flex';
+        html5QrCode = new Html5Qrcode("reader");
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        try {
+            await html5QrCode.start(
+                { facingMode: "environment" },
+                config,
+                (decodedText) => {
+                    // Success! Decoded text should be the URL
+                    console.log("[Scanner] QR rilevato:", decodedText);
+                    stopScanner();
+
+                    // Process the URL found in the QR
+                    try {
+                        const url = new URL(decodedText);
+                        let params;
+                        if (url.hash && url.hash.length > 1) {
+                            params = new URLSearchParams(url.hash.substring(1));
+                        } else {
+                            params = new URLSearchParams(url.search);
+                        }
+
+                        const amount = params.get('amount');
+                        const customer = params.get('customer');
+                        const ts = params.get('ts');
+
+                        if (amount && ts) {
+                            processIncomingPayment({
+                                type: 'PAYMENT',
+                                amount: parseFloat(amount),
+                                customer: customer || 'Utente',
+                                sender: 'Scanner App'
+                            });
+                        }
+                    } catch (e) {
+                        console.error("[Scanner] Errore parsing URL:", e);
+                    }
+                }
+            );
+        } catch (err) {
+            console.error("[Scanner] Errore avvio fotocamera:", err);
+            alert("Impossibile accedere alla fotocamera. Verifica i permessi.");
+            stopScanner();
+        }
+    };
+
+    const stopScanner = async () => {
+        if (html5QrCode) {
+            try {
+                await html5QrCode.stop();
+            } catch (e) {
+                console.log("[Scanner] Errore stop (già fermo?):", e);
+            }
+            html5QrCode = null;
+        }
+        scannerOverlay.style.display = 'none';
+    };
+
+    openScannerBtn.addEventListener('click', startScanner);
+    closeScannerBtn.addEventListener('click', stopScanner);
 });

@@ -15,6 +15,72 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        /* QR Scanner UI */
+        .scanner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+        }
+
+        #reader {
+            width: 100%;
+            height: 100%;
+        }
+
+        .scanner-controls {
+            position: absolute;
+            bottom: 2rem;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 210;
+        }
+
+        .close-scanner-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .scan-fab {
+            position: fixed;
+            bottom: 6rem;
+            right: 1.5rem;
+            width: 60px;
+            height: 60px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--background);
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+            cursor: pointer;
+            z-index: 100;
+            border: none;
+            transition: transform 0.2s;
+        }
+
+        .scan-fab:active {
+            transform: scale(0.9);
+        }
+    </style>
     <style>
         body {
             padding: 0;
@@ -125,15 +191,16 @@
                         </div>
                     </div>
 
-                    <!-- Notification Overlay -->
-                    <div class="notification-overlay" id="notificationOverlay">
-                        <div class="notification-card">
-                            <div class="notif-icon"><i class="fas fa-bolt"></i></div>
-                            <div class="notif-content">
-                                <h5>Resto Istantaneo!</h5>
-                                <p id="notifSender">Da: Cassa Negozio</p>
-                                <h3 id="notifAmount">+0.00 €</h3>
-                            </div>
+                    <!-- Floating Action Button for Scanner -->
+                    <button class="scan-fab" id="openScannerBtn">
+                        <i class="fas fa-qrcode"></i>
+                    </button>
+
+                    <!-- QR Scanner Overlay -->
+                    <div class="scanner-overlay" id="scannerOverlay">
+                        <div id="reader"></div>
+                        <div class="scanner-controls">
+                            <button class="close-scanner-btn" id="closeScannerBtn">Chiudi Scanner</button>
                         </div>
                     </div>
                 </div>
