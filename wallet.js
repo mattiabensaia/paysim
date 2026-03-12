@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Load History
     const loadHistory = () => {
+        transactionList.innerHTML = ''; // Clear current list
         const history = JSON.parse(localStorage.getItem('tx_history') || '[]');
         history.forEach(tx => {
             const txDiv = document.createElement('div');
@@ -59,6 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     loadHistory();
+
+    // Sync between tabs/PWA and Browser
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'user_balance') {
+            currentBalance = parseFloat(e.newValue);
+            walletBalance.textContent = currentBalance.toFixed(2);
+        }
+        if (e.key === 'tx_history') {
+            loadHistory();
+        }
+    });
 
     const processIncomingPayment = (data) => {
         console.log('Processing payment:', data);
