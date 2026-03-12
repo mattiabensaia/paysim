@@ -4,7 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Wallet - PaySim</title>
+    <title>PaySim Wallet</title>
+    <meta name="description" content="Ricevi il resto digitale sul tuo telefono">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
@@ -136,6 +142,48 @@
     </div>
 
     <script src="wallet.js"></script>
+    <script>
+        // PWA: Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then((reg) => console.log('[PWA] Service Worker registrato', reg.scope))
+                .catch((err) => console.log('[PWA] SW fallito', err));
+        }
+
+        // PWA: Install Banner
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            // Show custom install banner
+            const banner = document.createElement('div');
+            banner.id = 'installBanner';
+            banner.innerHTML = `
+                <div style="position:fixed;bottom:0;left:0;right:0;background:linear-gradient(135deg,#1e3a5f,#7c3aed);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;z-index:999;box-shadow:0 -4px 20px rgba(0,0,0,0.4)">
+                    <div style="display:flex;align-items:center;gap:0.8rem">
+                        <img src="icon-192.png" style="width:40px;height:40px;border-radius:10px">
+                        <div>
+                            <div style="font-weight:700;font-size:0.95rem">Installa PaySim</div>
+                            <div style="font-size:0.75rem;color:rgba(255,255,255,0.7)">Accesso rapido dalla Home</div>
+                        </div>
+                    </div>
+                    <button id="installBtn" style="background:#38bdf8;color:#0f172a;border:none;padding:0.6rem 1.2rem;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer">Installa</button>
+                </div>
+            `;
+            document.body.appendChild(banner);
+
+            document.getElementById('installBtn').addEventListener('click', () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        console.log('[PWA] App installata!');
+                    }
+                    banner.remove();
+                    deferredPrompt = null;
+                });
+            });
+        });
+    </script>
 </body>
 
 </html>
