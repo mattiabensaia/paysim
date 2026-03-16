@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Always show QR as fallback/alternative
-        await showQrFallback(amount, customer);
+        await showQrFallback(changeToGive, customer);
     });
 
     const showQrFallback = async (amount, customer) => {
