@@ -93,11 +93,11 @@ document.addEventListener('DOMContentLoaded', () => {
         qrcodeDiv.innerHTML = '';
         qrGenerator = new QRCode(qrcodeDiv, {
             text: qrUrl,
-            width: 200,
-            height: 200,
+            width: 250,
+            height: 250,
             colorDark: "#000000",
             colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
+            correctLevel: QRCode.CorrectLevel.L
         });
 
         qrOverlay.style.display = 'flex';

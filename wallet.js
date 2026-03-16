@@ -167,7 +167,11 @@ document.addEventListener('DOMContentLoaded', () => {
         scannerOverlay.style.display = 'flex';
         html5QrCode = new Html5Qrcode("reader");
 
-        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        const config = {
+            fps: 15,
+            qrbox: { width: 200, height: 200 },
+            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
+        };
 
         try {
             await html5QrCode.start(
