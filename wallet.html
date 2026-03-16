@@ -209,10 +209,34 @@
                         </div>
                     </div>
 
-                    <!-- Floating Action Button for Scanner -->
-                    <button class="scan-fab" id="openScannerBtn">
-                        <i class="fas fa-qrcode"></i>
-                    </button>
+                    <!-- Floating Action Buttons Container -->
+                    <div
+                        style="position: fixed; bottom: 6rem; right: 1.5rem; display: flex; flex-direction: column; gap: 1rem; z-index: 100;">
+                        <!-- Virtual Card Button -->
+                        <button class="scan-fab" id="virtualCardBtn" style="position: relative; right: 0; bottom: 0;">
+                            <i class="fas fa-credit-card"></i>
+                        </button>
+                        <!-- Scanner Button -->
+                        <button class="scan-fab" id="openScannerBtn" style="position: relative; right: 0; bottom: 0;">
+                            <i class="fas fa-qrcode"></i>
+                        </button>
+                    </div>
+
+                    <!-- Virtual Card Overlay -->
+                    <div class="virtual-card-overlay" id="virtualCardOverlay">
+                        <div class="virtual-card">
+                            <div class="card-chip"></div>
+                            <div class="card-balance">€ <span id="virtualCardBalance">12.50</span></div>
+                            <div class="card-details">
+                                <span class="card-name" id="virtualCardName">NOME UTENTE</span>
+                                <i class="fas fa-wifi fa-rotate-90 nfc-icon"></i>
+                            </div>
+                        </div>
+                        <button class="nfc-pay-btn" id="simulateNFCPayBtn">
+                            <i class="fas fa-contactless"></i> Avvicina al POS
+                        </button>
+                        <button class="close-card-btn" id="closeVirtualCardBtn">Chiudi Carta</button>
+                    </div>
 
                     <!-- QR Scanner Overlay -->
                     <div class="scanner-overlay" id="scannerOverlay">

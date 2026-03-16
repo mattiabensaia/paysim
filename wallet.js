@@ -9,6 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const connStatusIcon = document.getElementById('connStatus');
     const displayUserName = document.getElementById('displayUserName');
 
+    // Virtual Card Elements
+    const virtualCardBtn = document.getElementById('virtualCardBtn');
+    const virtualCardOverlay = document.getElementById('virtualCardOverlay');
+    const closeVirtualCardBtn = document.getElementById('closeVirtualCardBtn');
+    const simulateNFCPayBtn = document.getElementById('simulateNFCPayBtn');
+    const virtualCardBalance = document.getElementById('virtualCardBalance');
+    const virtualCardName = document.getElementById('virtualCardName');
+
     // State & Persistence
     let currentBalance = parseFloat(localStorage.getItem('user_balance')) || 12.50;
     walletBalance.textContent = currentBalance.toFixed(2);
@@ -17,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentBalance = newBalance;
         localStorage.setItem('user_balance', currentBalance.toFixed(2));
         walletBalance.textContent = currentBalance.toFixed(2);
+        virtualCardBalance.textContent = currentBalance.toFixed(2);
     };
 
     const addTransaction = (amount, sender) => {
@@ -172,6 +181,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Run immediately on load
     checkUrlParams();
+
+    // --- Virtual Card Logic ---
+    virtualCardBtn.addEventListener('click', () => {
+        virtualCardName.textContent = displayUserName.textContent;
+        virtualCardBalance.textContent = currentBalance.toFixed(2);
+        virtualCardOverlay.classList.add('active');
+    });
+
+    closeVirtualCardBtn.addEventListener('click', () => {
+        virtualCardOverlay.classList.remove('active');
+    });
+
+    simulateNFCPayBtn.addEventListener('click', () => {
+        if (currentBalance < 1) {
+            alert("Saldo insufficiente sulla carta!");
+            return;
+        }
+
+        simulateNFCPayBtn.classList.add('nfc-pay-success');
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+        setTimeout(() => {
+            // Deduct 1 EUR as a simulated payment
+            saveBalance(currentBalance - 1);
+
+            // Add negative transaction visually
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+
+            const txDiv = document.createElement('div');
+            txDiv.className = 'transaction-item';
+            txDiv.innerHTML = `
+                <div class="tx-icon out"><i class="fas fa-shopping-bag"></i></div>
+                <div class="tx-details">
+                    <div class="tx-title">Spesa Contactless (Negozio finto)</div>
+                    <div class="tx-time">Oggi, ${timeString}</div>
+                </div>
+                <div class="tx-amount negative">-1.00 €</div>
+            `;
+            transactionList.insertBefore(txDiv, transactionList.firstChild);
+
+            // Persist to history
+            const history = JSON.parse(localStorage.getItem('tx_history') || '[]');
+            history.unshift({ amount: -1, sender: "Spesa Contactless" /* UI map for this specific case not ideal but handles array */, time: timeString });
+            localStorage.setItem('tx_history', JSON.stringify(history.slice(0, 10)));
+
+            setTimeout(() => {
+                simulateNFCPayBtn.classList.remove('nfc-pay-success');
+                virtualCardOverlay.classList.remove('active');
+            }, 600);
+        }, 1200);
+    });
 
     // --- QR Scanner Logic (jsQR) ---
     const scannerOverlay = document.getElementById('scannerOverlay');
