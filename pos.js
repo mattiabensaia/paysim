@@ -64,22 +64,22 @@ document.addEventListener('DOMContentLoaded', () => {
         sendActionBtn.disabled = changeToGive <= 0;
     };
 
-    sendActionBtn.addEventListener('click', () => {
-        const amount = changeToGive;
+    sendActionBtn.addEventListener('click', async () => {
+        const cost = parseFloat(totalCostInput.value);
         const customer = customerNameInput.value.trim();
 
         // 1. Try P2P if connected
         if (conn && conn.open) {
-            const data = { type: 'PAYMENT', amount, customer, sender: 'Cassa Mac' };
+            const data = { type: 'PAYMENT', amount: changeToGive, customer, sender: 'Cassa Mac' };
             conn.send(data);
             statusMessage.textContent = 'Inviato via wireless!';
         }
 
         // 2. Always show QR as fallback/alternative
-        showQrFallback(amount, customer);
+        await showQrFallback(amount, customer);
     });
 
-    const showQrFallback = (amount, customer) => {
+    const showQrFallback = async (amount, customer) => {
         // Read public URL from the config field (critical: localhost won't work from phone!)
         const publicUrlInput = document.getElementById('publicUrl');
         let publicBase = publicUrlInput.value.trim();
@@ -87,8 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove trailing slash if present
         if (publicBase.endsWith('/')) publicBase = publicBase.slice(0, -1);
 
+        const ts = Date.now().toString();
+        const sig = await generateSignature(amount.toFixed(2), ts); // Ensure amount is formatted for signature
+
         // Build wallet URL with query params (reliable across all native scanners)
-        const qrUrl = `${publicBase}/wallet.html?amount=${amount}&customer=${encodeURIComponent(customer)}&ts=${Date.now()}`;
+        const qrUrl = `${publicBase}/wallet.html?amount=${amount.toFixed(2)}&customer=${encodeURIComponent(customer)}&ts=${ts}&sig=${sig}`;
 
         qrcodeDiv.innerHTML = '';
         qrGenerator = new QRCode(qrcodeDiv, {

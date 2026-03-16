@@ -118,14 +118,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    const checkUrlParams = () => {
+    const generateSignature = async (amount, ts) => {
+        const secret = "PAYSIM_SECRET_2026";
+        const message = `${amount}|${ts}|${secret}`;
+        const encoder = new TextEncoder();
+        const data = encoder.encode(message);
+
+        // Use native Web Crypto API for lightweight SHA-256 hashing
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    };
+
+    const checkUrlParams = async () => {
         const params = new URLSearchParams(window.location.search);
 
         const amount = params.get('amount');
         const customer = params.get('customer');
         const ts = params.get('ts');
+        const sig = params.get('sig'); // The security signature
 
         if (amount && ts) {
+            // First: Verify Signature
+            if (!sig) {
+                alert("⛔ SCANSIONE RESPINTA: Questo codice a barre non è firmato digitalmente e potrebbe essere fraudolento.");
+                return;
+            }
+
+            const expectedSig = await generateSignature(amount, ts);
+            if (sig !== expectedSig) {
+                alert("⛔ FRODE RILEVATA: Questo codice a barre è stato contraffatto e alterato rispetto all'originale generato dalla Cassa.");
+                return;
+            }
+
             const lastTs = localStorage.getItem('last_payment_ts');
             if (ts !== lastTs) {
                 localStorage.setItem('last_payment_ts', ts);
@@ -220,7 +245,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const onScanSuccess = (decodedText) => {
+    const onScanSuccess = async (decodedText) => {
         console.log("[Scanner] QR rilevato:", decodedText);
 
         const getParam = (name) => {
@@ -232,8 +257,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const amount = getParam('amount');
         const customer = getParam('customer');
         const ts = getParam('ts');
+        const sig = getParam('sig');
 
         if (amount && ts) {
+            // Security verification step 1: require signature
+            if (!sig) {
+                alert("⛔ SCANSIONE RESPINTA: Questo codice QR non è firmato digitalmente e potrebbe essere fraudolento.");
+                stopScanner();
+                return;
+            }
+
+            // Security verification step 2: validate signature
+            const expectedSig = await generateSignature(amount, ts);
+            if (sig !== expectedSig) {
+                alert("⛔ FRODE RILEVATA: Questo codice QR è stato alterato rispetto all'originale generato dalla Cassa.");
+                stopScanner();
+                return;
+            }
+
             const lastTs = localStorage.getItem('last_payment_ts');
             if (ts === lastTs) {
                 alert("Hai già ricevuto questo pagamento.");
@@ -248,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 type: 'PAYMENT',
                 amount: parseFloat(amount),
                 customer: customer || 'Utente',
-                sender: 'Scanner App'
+                sender: 'Scanner App (Verificato)'
             });
         } else if (decodedText.startsWith('mattia-')) {
             alert("Stai scansionando il Codice Cassa. Devi scansionare il QR mostrato sul Mac dopo aver cliccato 'Invia Resto'.");
