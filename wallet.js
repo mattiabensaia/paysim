@@ -156,109 +156,114 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('hashchange', checkUrlParams);
 
     // --- QR Scanner Logic ---
+    // --- QR Scanner Logic (jsQR) ---
     const scannerOverlay = document.getElementById('scannerOverlay');
     const openScannerBtn = document.getElementById('openScannerBtn');
     const closeScannerBtn = document.getElementById('closeScannerBtn');
-    let html5QrCode;
+    const video = document.getElementById('qr-video');
+    const canvasElement = document.getElementById('qr-canvas');
+    const canvas = canvasElement.getContext('2d');
+    let scanningStatus = false;
+    let stream = null;
 
     const startScanner = async () => {
         scannerOverlay.style.display = 'flex';
-        html5QrCode = new Html5Qrcode("reader");
-
-        const config = {
-            fps: 10,  // Lower fps for older devices
-            qrbox: { width: 250, height: 250 },
-            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE]
-        };
-
-        const onScanSuccess = (decodedText) => {
-            console.log("[Scanner] QR rilevato:", decodedText);
-
-            // Simple param extractor (independent of full URL or relative)
-            const getParam = (name) => {
-                const regex = new RegExp(`[#?&]${name}=([^&]*)`);
-                const match = decodedText.match(regex);
-                return match ? decodeURIComponent(match[1]) : null;
-            };
-
-            const amount = getParam('amount');
-            const customer = getParam('customer');
-            const ts = getParam('ts');
-
-            console.log("[Scanner] Dati estratti:", { amount, customer, ts });
-
-            if (amount && ts) {
-                const lastTs = localStorage.getItem('last_payment_ts');
-                if (ts === lastTs) {
-                    alert("Hai già ricevuto questo pagamento.");
-                    stopScanner();
-                    return;
-                }
-
-                localStorage.setItem('last_payment_ts', ts);
-                stopScanner();
-
-                processIncomingPayment({
-                    type: 'PAYMENT',
-                    amount: parseFloat(amount),
-                    customer: customer || 'Utente',
-                    sender: 'Scanner App'
-                });
-            } else if (decodedText.startsWith('mattia-')) {
-                alert("Stai scansionando il Codice Cassa. Devi scansionare il QR mostrato sul Mac dopo aver cliccato 'Invia Resto'.");
-            } else {
-                alert("QR Code non riconosciuto dal sistema PaySim.");
-            }
-        };
+        scanningStatus = true;
 
         try {
-            // Fix for iOS PWA camera: explicitly request back camera using deviceId if possible
-            const devices = await Html5Qrcode.getCameras();
-            if (devices && devices.length) {
-                // Find back camera
-                let backCamera = devices.find(device => device.label.toLowerCase().includes('back') || device.label.toLowerCase().includes('retro'));
-                let cameraIdToUse = backCamera ? backCamera.id : devices[devices.length - 1].id;
-
-                await html5QrCode.start(
-                    cameraIdToUse,
-                    config,
-                    onScanSuccess
-                );
-            } else {
-                // Fallback
-                await html5QrCode.start(
-                    { facingMode: "environment" },
-                    config,
-                    onScanSuccess
-                );
-            }
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: "environment" }
+            });
+            video.srcObject = stream;
+            // Required for iOS Safari to play the video inline
+            video.setAttribute("playsinline", true);
+            video.play();
+            requestAnimationFrame(tick);
         } catch (err) {
-            console.error("[Scanner] Errore avvio fotocamera:", err);
-
-            // Detailed alert to help debug permissions on iOS
+            console.error("[Scanner] Errore fotocamera:", err);
             let errorMsg = err.message || err.toString();
             if (errorMsg.includes("NotAllowedError") || errorMsg.includes("Permission denied")) {
-                alert("⛔ Per usare lo scanner devi dare il permesso alla fotocamera nelle Impostazioni del telefono (Safari/Chrome).");
-            } else if (errorMsg.includes("NotFoundError")) {
-                alert("Nessuna fotocamera posteriore trovata.");
+                alert("⛔ Permesso fotocamera negato. Vai nelle Impostazioni del telefono (Safari/Chrome) e consenti l'accesso.");
             } else {
-                alert("Errore fotocamera: " + errorMsg + "\nIn iOS, chiudi l'app e aprila di nuovo.");
+                alert("Errore fotocamera: " + errorMsg + "\nRiprova o chiudi l'app.");
             }
             stopScanner();
         }
     };
 
-    const stopScanner = async () => {
-        if (html5QrCode && html5QrCode.isScanning) {
-            try {
-                await html5QrCode.stop();
-            } catch (e) {
-                console.log("[Scanner] Errore stop (già fermo?):", e);
+    const tick = () => {
+        if (!scanningStatus) return;
+
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+
+            var code = jsQR(imageData.data, imageData.width, imageData.height, {
+                inversionAttempts: "dontInvert",
+            });
+
+            if (code) {
+                onScanSuccess(code.data);
+            } else {
+                requestAnimationFrame(tick);
             }
+        } else {
+            requestAnimationFrame(tick);
         }
-        html5QrCode = null;
+    };
+
+    const onScanSuccess = (decodedText) => {
+        console.log("[Scanner] QR rilevato:", decodedText);
+
+        const getParam = (name) => {
+            const regex = new RegExp(`[#?&]${name}=([^&]*)`);
+            const match = decodedText.match(regex);
+            return match ? decodeURIComponent(match[1]) : null;
+        };
+
+        const amount = getParam('amount');
+        const customer = getParam('customer');
+        const ts = getParam('ts');
+
+        if (amount && ts) {
+            const lastTs = localStorage.getItem('last_payment_ts');
+            if (ts === lastTs) {
+                alert("Hai già ricevuto questo pagamento.");
+                stopScanner();
+                return;
+            }
+
+            localStorage.setItem('last_payment_ts', ts);
+            stopScanner();
+
+            processIncomingPayment({
+                type: 'PAYMENT',
+                amount: parseFloat(amount),
+                customer: customer || 'Utente',
+                sender: 'Scanner App'
+            });
+        } else if (decodedText.startsWith('mattia-')) {
+            alert("Stai scansionando il Codice Cassa. Devi scansionare il QR mostrato sul Mac dopo aver cliccato 'Invia Resto'.");
+            requestAnimationFrame(tick); // resume scanning
+        } else {
+            alert("QR Code non riconosciuto dal sistema PaySim.");
+            requestAnimationFrame(tick); // resume scanning
+        }
+    };
+
+    const stopScanner = () => {
+        scanningStatus = false;
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            stream = null;
+        }
         scannerOverlay.style.display = 'none';
-        document.getElementById('reader').innerHTML = '';
+        // Clear canvas
+        if (canvasElement.width > 0) {
+            canvas.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        }
     };
 
     openScannerBtn.addEventListener('click', startScanner);

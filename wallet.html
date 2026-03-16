@@ -15,7 +15,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
         /* QR Scanner UI */
         .scanner-overlay {
@@ -28,11 +28,29 @@
             z-index: 200;
             display: none;
             flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
-        #reader {
+        #qr-video {
             width: 100%;
             height: 100%;
+            object-fit: cover;
+        }
+
+        #qr-canvas {
+            display: none;
+        }
+
+        .scanner-overlay::after {
+            content: '';
+            position: absolute;
+            width: 250px;
+            height: 250px;
+            border: 2px solid var(--accent);
+            border-radius: 12px;
+            box-shadow: 0 0 0 4000px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
         }
 
         .scanner-controls {
@@ -198,7 +216,8 @@
 
                     <!-- QR Scanner Overlay -->
                     <div class="scanner-overlay" id="scannerOverlay">
-                        <div id="reader"></div>
+                        <video id="qr-video" playsinline></video>
+                        <canvas id="qr-canvas"></canvas>
                         <div class="scanner-controls">
                             <button class="close-scanner-btn" id="closeScannerBtn">Chiudi Scanner</button>
                         </div>
