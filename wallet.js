@@ -119,12 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const checkUrlParams = () => {
-        let params;
-        if (window.location.hash && window.location.hash.length > 1) {
-            params = new URLSearchParams(window.location.hash.substring(1));
-        } else {
-            params = new URLSearchParams(window.location.search);
-        }
+        const params = new URLSearchParams(window.location.search);
 
         const amount = params.get('amount');
         const customer = params.get('customer');
@@ -132,28 +127,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (amount && ts) {
             const lastTs = localStorage.getItem('last_payment_ts');
-            // Remove the strict check for lastTs if it's coming from a fresh URL load
-            // since clearing the hash prevents accidental double loading anyway.
-            localStorage.setItem('last_payment_ts', ts);
-            const data = {
-                type: 'PAYMENT',
-                amount: parseFloat(amount),
-                customer: customer || 'Utente',
-                sender: 'Scansione Esterna'
-            };
-            processIncomingPayment(data);
+            if (ts !== lastTs) {
+                localStorage.setItem('last_payment_ts', ts);
+                const data = {
+                    type: 'PAYMENT',
+                    amount: parseFloat(amount),
+                    customer: customer || 'Utente',
+                    sender: 'Scansione Esterna'
+                };
+                processIncomingPayment(data);
+            }
 
-            // CRITICAL FIX: instead of replaceState, explicitly clear the hash. 
-            // This ensures that if the user scans the same QR code again later (from external app), 
-            // the 'hashchange' event triggers correctly.
-            window.location.hash = '';
+            // Cleanup the URL so refreshing the page doesn't resubmit the payment
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
     };
 
     // Run immediately on load
     checkUrlParams();
-    // Also listen for hash changes (in case redirect adds hash after load or external app scans while open)
-    window.addEventListener('hashchange', checkUrlParams);
 
     // --- QR Scanner Logic ---
     // --- QR Scanner Logic (jsQR) ---
@@ -172,7 +163,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: "environment" }
+                video: {
+                    facingMode: "environment",
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                }
             });
             video.srcObject = stream;
             // Required for iOS Safari to play the video inline
@@ -201,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
 
             var code = jsQR(imageData.data, imageData.width, imageData.height, {
-                inversionAttempts: "dontInvert",
+                inversionAttempts: "attemptBoth",
             });
 
             if (code) {

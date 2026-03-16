@@ -1,4 +1,4 @@
-const CACHE_NAME = 'paysim-v8';
+const CACHE_NAME = 'paysim-v9';
 const ASSETS_TO_CACHE = [
     '/paysim/',
     '/paysim/wallet.html',
@@ -14,7 +14,7 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Caching app shell');
+            console.log('[SW] Caching app shell v9');
             return cache.addAll(ASSETS_TO_CACHE);
         })
     );
@@ -37,7 +37,9 @@ self.addEventListener('activate', (event) => {
 // Fetch: serve from cache first, fallback to network
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
+        // CRITICAL FIX: ignoreSearch:true ensures that URLs like /wallet.html?amount=1.10
+        // correctly match the cached /wallet.html file!
+        caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
             if (cachedResponse) {
                 return cachedResponse;
             }
@@ -53,7 +55,7 @@ self.addEventListener('fetch', (event) => {
             }).catch(() => {
                 // If both cache and network fail, return a fallback for HTML pages
                 if (event.request.headers.get('accept').includes('text/html')) {
-                    return caches.match('/paysim/wallet.html');
+                    return caches.match('/paysim/wallet.html', { ignoreSearch: true });
                 }
             });
         })

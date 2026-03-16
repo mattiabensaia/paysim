@@ -87,14 +87,14 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove trailing slash if present
         if (publicBase.endsWith('/')) publicBase = publicBase.slice(0, -1);
 
-        // Build wallet URL with hash fragment (survives Serveo redirect)
-        const qrUrl = `${publicBase}/wallet.html#amount=${amount}&customer=${encodeURIComponent(customer)}&ts=${Date.now()}`;
+        // Build wallet URL with query params (reliable across all native scanners)
+        const qrUrl = `${publicBase}/wallet.html?amount=${amount}&customer=${encodeURIComponent(customer)}&ts=${Date.now()}`;
 
         qrcodeDiv.innerHTML = '';
         qrGenerator = new QRCode(qrcodeDiv, {
             text: qrUrl,
-            width: 250,
-            height: 250,
+            width: 300,
+            height: 300,
             colorDark: "#000000",
             colorLight: "#ffffff",
             correctLevel: QRCode.CorrectLevel.L
