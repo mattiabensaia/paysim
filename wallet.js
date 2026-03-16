@@ -136,6 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     sender: 'Scansione Esterna'
                 };
                 processIncomingPayment(data);
+            } else {
+                alert("Questo pagamento esterno è già stato accreditato in precedenza.");
             }
 
             // Cleanup the URL so refreshing the page doesn't resubmit the payment
@@ -146,7 +148,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run immediately on load
     checkUrlParams();
 
-    // --- QR Scanner Logic ---
     // --- QR Scanner Logic (jsQR) ---
     const scannerOverlay = document.getElementById('scannerOverlay');
     const openScannerBtn = document.getElementById('openScannerBtn');
@@ -171,8 +172,10 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             video.srcObject = stream;
             // Required for iOS Safari to play the video inline
-            video.setAttribute("playsinline", true);
-            video.play();
+            video.setAttribute("playsinline", "true");
+            video.setAttribute("autoplay", "true");
+            video.setAttribute("muted", "true");
+            video.play().catch(e => console.error(e));
             requestAnimationFrame(tick);
         } catch (err) {
             console.error("[Scanner] Errore fotocamera:", err);
