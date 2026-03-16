@@ -193,20 +193,28 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!scanningStatus) return;
 
         if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvasElement.height = video.videoHeight;
-            canvasElement.width = video.videoWidth;
-            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
-            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            // Ensure exact integer mapping for jsQR data array
+            canvasElement.height = Math.floor(video.videoHeight);
+            canvasElement.width = Math.floor(video.videoWidth);
 
-            var code = jsQR(imageData.data, imageData.width, imageData.height, {
-                inversionAttempts: "attemptBoth",
-            });
+            if (canvasElement.width > 0 && canvasElement.height > 0) {
+                canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+                var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
 
-            if (code) {
-                onScanSuccess(code.data);
-            } else {
-                requestAnimationFrame(tick);
+                try {
+                    var code = jsQR(imageData.data, imageData.width, imageData.height, {
+                        inversionAttempts: "attemptBoth",
+                    });
+
+                    if (code) {
+                        onScanSuccess(code.data);
+                        return; // Stop the loop on success
+                    }
+                } catch (e) {
+                    console.error("[Scanner] jsQR processing error:", e);
+                }
             }
+            requestAnimationFrame(tick);
         } else {
             requestAnimationFrame(tick);
         }
@@ -246,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Stai scansionando il Codice Cassa. Devi scansionare il QR mostrato sul Mac dopo aver cliccato 'Invia Resto'.");
             requestAnimationFrame(tick); // resume scanning
         } else {
-            alert("QR Code non riconosciuto dal sistema PaySim.");
+            alert(`QR INCOMPATIBILE\nTesto Rilevato:\n${decodedText.substring(0, 50)}...\n\nAssicurati di inquadrare il QR generato dalla Cassa Mac.`);
             requestAnimationFrame(tick); // resume scanning
         }
     };
