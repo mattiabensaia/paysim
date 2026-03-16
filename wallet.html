@@ -216,10 +216,21 @@
 
                     <!-- QR Scanner Overlay -->
                     <div class="scanner-overlay" id="scannerOverlay">
-                        <video id="qr-video" playsinline></video>
+                        <video id="qr-video" playsinline autoplay muted></video>
                         <canvas id="qr-canvas"></canvas>
                         <div class="scanner-controls">
                             <button class="close-scanner-btn" id="closeScannerBtn">Chiudi Scanner</button>
+                        </div>
+                    </div>
+
+                    <!-- Notification Popup (CRITICAL FIX: Was missing, causing JS crash) -->
+                    <div class="notification-overlay" id="notificationOverlay">
+                        <div class="notification-card">
+                            <i class="fas fa-check-circle"
+                                style="color: var(--success); font-size: 2.5rem; margin-bottom: 0.5rem;"></i>
+                            <h3>Pagamento Ricevuto!</h3>
+                            <div class="notif-amount" id="notifAmount">+0.00 €</div>
+                            <div class="notif-sender" id="notifSender">Da: Cassa</div>
                         </div>
                     </div>
                 </div>
