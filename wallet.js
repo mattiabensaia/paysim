@@ -88,24 +88,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const addTransaction = (amount, sender) => {
+        const amt = parseFloat(amount);
+        const isExpense = amt < 0;
         const now = new Date();
         const timeString = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
         const txDiv = document.createElement('div');
         txDiv.className = 'transaction-item';
         txDiv.innerHTML = `
-            <div class="tx-icon in"><i class="fas fa-plus"></i></div>
+            <div class="tx-icon ${isExpense ? 'out' : 'in'}"><i class="fas ${isExpense ? 'fa-shopping-bag' : 'fa-plus'}"></i></div>
             <div class="tx-details">
-                <div class="tx-title">Resto da ${sender || 'Cassa'}</div>
+                <div class="tx-title">${isExpense ? sender : 'Resto da ' + (sender || 'Cassa')}</div>
                 <div class="tx-time">Oggi, ${timeString}</div>
             </div>
-            <div class="tx-amount positive">+${parseFloat(amount).toFixed(2)} €</div>
+            <div class="tx-amount ${isExpense ? 'negative' : 'positive'}">${isExpense ? '' : '+'}${amt.toFixed(2)} €</div>
         `;
         transactionList.insertBefore(txDiv, transactionList.firstChild);
 
         // Persist transactions too
         const history = JSON.parse(localStorage.getItem('tx_history') || '[]');
-        history.unshift({ amount, sender, time: timeString });
+        history.unshift({ amount: amt, sender: sender || 'Cassa', time: timeString });
         localStorage.setItem('tx_history', JSON.stringify(history.slice(0, 10)));
     };
 
@@ -114,15 +116,17 @@ document.addEventListener('DOMContentLoaded', () => {
         transactionList.innerHTML = ''; // Clear current list
         const history = JSON.parse(localStorage.getItem('tx_history') || '[]');
         history.forEach(tx => {
+            const amt = parseFloat(tx.amount);
+            const isExpense = amt < 0;
             const txDiv = document.createElement('div');
             txDiv.className = 'transaction-item';
             txDiv.innerHTML = `
-                <div class="tx-icon in"><i class="fas fa-plus"></i></div>
+                <div class="tx-icon ${isExpense ? 'out' : 'in'}"><i class="fas ${isExpense ? 'fa-shopping-bag' : 'fa-plus'}"></i></div>
                 <div class="tx-details">
-                    <div class="tx-title">Resto da ${tx.sender || 'Cassa'}</div>
+                    <div class="tx-title">${isExpense ? tx.sender : 'Resto da ' + (tx.sender || 'Cassa')}</div>
                     <div class="tx-time">Oggi, ${tx.time}</div>
                 </div>
-                <div class="tx-amount positive">+${parseFloat(tx.amount).toFixed(2)} €</div>
+                <div class="tx-amount ${isExpense ? 'negative' : 'positive'}">${isExpense ? '' : '+'}${amt.toFixed(2)} €</div>
             `;
             transactionList.appendChild(txDiv);
         });
@@ -238,29 +242,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
         setTimeout(() => {
-            // Deduct 1 EUR as a simulated payment
+            // Deduct 1 EUR and add to history using centralized logic
             saveBalance(currentBalance - 1);
-
-            // Add negative transaction visually
-            const now = new Date();
-            const timeString = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
-
-            const txDiv = document.createElement('div');
-            txDiv.className = 'transaction-item';
-            txDiv.innerHTML = `
-                <div class="tx-icon out"><i class="fas fa-shopping-bag"></i></div>
-                <div class="tx-details">
-                    <div class="tx-title">Spesa Contactless (Negozio finto)</div>
-                    <div class="tx-time">Oggi, ${timeString}</div>
-                </div>
-                <div class="tx-amount negative">-1.00 €</div>
-            `;
-            transactionList.insertBefore(txDiv, transactionList.firstChild);
-
-            // Persist to history
-            const history = JSON.parse(localStorage.getItem('tx_history') || '[]');
-            history.unshift({ amount: -1, sender: "Spesa Contactless" /* UI map for this specific case not ideal but handles array */, time: timeString });
-            localStorage.setItem('tx_history', JSON.stringify(history.slice(0, 10)));
+            addTransaction(-1, "Spesa Contactless");
 
             setTimeout(() => {
                 simulateNFCPayBtn.classList.remove('nfc-pay-success');
