@@ -1,12 +1,12 @@
 {
-    "name": "PaySim - Resto Digitale",
-    "short_name": "PaySim",
-    "description": "Ricevi il resto in formato digitale direttamente sul tuo telefono.",
+    "name": "Voltix Finance - Pagamenti Istantanei",
+    "short_name": "Voltix",
+    "description": "Ricevi il resto in modo istantaneo e digitale.",
     "start_url": "/paysim/wallet.html",
     "scope": "/paysim/",
     "display": "standalone",
     "background_color": "#0f172a",
-    "theme_color": "#38bdf8",
+    "theme_color": "#A855F7",
     "orientation": "portrait",
     "icons": [
         {

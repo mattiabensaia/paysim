@@ -1,16 +1,18 @@
 :root {
     --bg-dark: #0f172a;
-    --glass-bg: rgba(30, 41, 59, 0.7);
+    --glass-bg: rgba(15, 23, 42, 0.8);
     --glass-border: rgba(255, 255, 255, 0.1);
-    --accent: #0ea5e9;
-    --accent-hover: #0284c7;
-    --accent-glow: rgba(14, 165, 233, 0.5);
-    --success: #10b981;
+    --accent: #A855F7;
+    /* Electric Purple */
+    --accent-hover: #9333EA;
+    --accent-glow: rgba(168, 85, 247, 0.5);
+    --success: #84CC16;
+    /* Neon Lime */
     --danger: #ef4444;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
-    --phone-bg: #1e293b;
-    --card-gradient: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    --phone-bg: #0f172a;
+    --card-gradient: linear-gradient(135deg, #7c3aed 0%, #d946ef 100%);
 }
 
 * {
