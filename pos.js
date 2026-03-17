@@ -53,6 +53,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
+    const generateSignature = async (amount, ts) => {
+        const secret = "PAYSIM_SECRET_2026";
+        const message = `${amount}|${ts}|${secret}`;
+        const encoder = new TextEncoder();
+        const data = encoder.encode(message);
+
+        // Use native Web Crypto API for lightweight SHA-256 hashing
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        // Simple hex string mapping
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    };
+
     const updateCalculations = () => {
         const cost = parseFloat(totalCostInput.value) || 0;
         const cash = parseFloat(cashGivenInput.value) || 0;
