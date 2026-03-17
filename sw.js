@@ -1,4 +1,4 @@
-const CACHE_NAME = 'voltix-v7';
+const CACHE_NAME = 'voltix-v8';
 self.addEventListener('install', (event) => {
     self.skipWaiting();
 });
