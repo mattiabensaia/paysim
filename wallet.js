@@ -1,10 +1,19 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- Sensory Engines ---
     const SoundEngine = {
-        ctx: new (window.AudioContext || window.webkitAudioContext)(),
+        ctx: null,
+
+        init: function () {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        },
 
         // Crisp ascending chord for success (Apple Pay style)
         playSuccess: function () {
+            this.init();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+
             const now = this.ctx.currentTime;
             this.playTone(440, now, 0.15);      // A4
             this.playTone(554.37, now + 0.1, 0.15);  // C#5
@@ -13,6 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Quick high-pitch pulse for scan confirmation
         playScan: function () {
+            this.init();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
             this.playTone(880, this.ctx.currentTime, 0.05);
         },
 
@@ -34,6 +45,18 @@ document.addEventListener('DOMContentLoaded', () => {
             osc.stop(start + duration);
         }
     };
+
+    // Auto-unlock Audio on first user interaction
+    const unlockAudio = () => {
+        SoundEngine.init();
+        if (SoundEngine.ctx.state === 'suspended') {
+            SoundEngine.ctx.resume();
+        }
+        window.removeEventListener('click', unlockAudio);
+        window.removeEventListener('touchstart', unlockAudio);
+    };
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
 
     // UI Elements
     const myPeerIdDisplay = document.getElementById('myPeerId');
