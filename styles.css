@@ -670,93 +670,99 @@ body {
 .virtual-card-overlay.active .virtual-card {
     transform: translateY(0);
     opacity: 1;
+    transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+}
 
-    /* Shine effect on card */
-    .virtual-card::after {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(to bottom right,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.1) 40%,
-                rgba(255, 255, 255, 0.4) 50%,
-                rgba(255, 255, 255, 0.1) 60%,
-                rgba(255, 255, 255, 0) 100%);
-        transform: rotate(30deg);
-        pointer-events: none;
-    }
+.card-shine {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0) 60%);
+    pointer-events: none;
+    z-index: 5;
+    mix-blend-mode: overlay;
+}
 
-    .virtual-card .card-chip {
-        width: 45px;
-        height: 35px;
-        background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
-        border-radius: 6px;
-        opacity: 0.9;
-        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
-    }
+/* Ensure children stay on top and have depth */
+.virtual-card .card-chip {
+    width: 45px;
+    height: 35px;
+    background: linear-gradient(135deg, #fcd34d 0%, #fbbf24 100%);
+    border-radius: 6px;
+    opacity: 0.9;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10;
+    transform: translateZ(20px);
+}
 
-    .virtual-card .card-balance {
-        font-size: 2.5rem;
-        font-weight: 700;
-        letter-spacing: 1px;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    }
+.virtual-card .card-balance {
+    font-size: 2.5rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10;
+    transform: translateZ(25px);
+}
 
-    .virtual-card .card-details {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-    }
+.virtual-card .card-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    position: relative;
+    z-index: 10;
+    transform: translateZ(20px);
+}
 
-    .virtual-card .card-name {
-        font-size: 1.1rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        opacity: 0.9;
-    }
+.virtual-card .card-name {
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.9;
+}
 
-    .virtual-card .nfc-icon {
-        font-size: 1.8rem;
-        opacity: 0.8;
-        animation: nfcPulse 2s infinite ease-in-out;
-    }
+.virtual-card .nfc-icon {
+    font-size: 1.8rem;
+    opacity: 0.8;
+    animation: nfcPulse 2s infinite ease-in-out;
+}
 
-    /* --- Virtual Card Action Buttons --- */
-    .nfc-pay-btn {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        padding: 1rem 2rem;
-        border-radius: 50px;
-        font-size: 1.2rem;
-        font-weight: 600;
-        cursor: pointer;
-        backdrop-filter: blur(10px);
-        display: flex;
-        align-items: center;
-        gap: 0.8rem;
-        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
-        transition: all 0.2s;
-    }
+/* --- Virtual Card Action Buttons --- */
+.nfc-pay-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    transition: all 0.2s;
+}
 
-    .nfc-pay-btn:active {
-        transform: scale(0.95);
-    }
+.nfc-pay-btn:active {
+    transform: scale(0.95);
+}
 
-    .nfc-pay-btn i {
-        font-size: 1.5rem;
-    }
+.nfc-pay-btn i {
+    font-size: 1.5rem;
+}
 
-    .close-card-btn {
-        background: transparent;
-        color: var(--text-muted);
-        border: none;
-        font-size: 1rem;
-        font-weight: 600;
-        cursor: pointer;
-        padding: 0.5rem 1rem;
-        margin-top: 1rem;
-    }
+.close-card-btn {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    margin-top: 1rem;
+}
