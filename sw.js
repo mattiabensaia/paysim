@@ -1,4 +1,8 @@
-const CACHE_NAME = 'voltix-v4';
+const CACHE_NAME = 'voltix-v5';
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
 const ASSETS_TO_CACHE = [
     '/paysim/',
     '/paysim/wallet.html',
