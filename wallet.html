@@ -164,6 +164,68 @@
             color: var(--text-muted);
             text-transform: uppercase;
         }
+
+        /* Onboarding UI */
+        .onboarding-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            z-index: 500;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .onboarding-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(20px);
+            padding: 2.5rem;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .onboarding-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 1.5rem;
+        }
+
+        .onboarding-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            margin-bottom: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .onboarding-input:focus {
+            border-color: var(--accent);
+        }
+
+        .onboarding-btn {
+            width: 100%;
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 
@@ -172,6 +234,18 @@
         <div class="phone-section">
             <div class="phone-mockup">
                 <div class="phone-screen">
+                    <!-- Onboarding Overlay -->
+                    <div class="onboarding-overlay" id="onboardingOverlay">
+                        <div class="onboarding-card">
+                            <img src="icon-192.png" class="onboarding-logo" alt="Voltix Logo">
+                            <h2 style="margin-bottom: 1.5rem;">Benvenuto in Voltix</h2>
+                            <input type="text" id="onboardingName" class="onboarding-input" placeholder="Il tuo Nome">
+                            <input type="text" id="onboardingSurname" class="onboarding-input"
+                                placeholder="Il tuo Cognome">
+                            <button class="onboarding-btn" id="startOnboardingBtn">Inizia</button>
+                        </div>
+                    </div>
+
                     <div class="app-header">
                         <h3>MyWallet</h3>
                         <div class="user-greeting">Benvenuto, <span id="displayUserName">Utente</span></div>

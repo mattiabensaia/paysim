@@ -76,8 +76,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const virtualCardBalance = document.getElementById('virtualCardBalance');
     const virtualCardName = document.getElementById('virtualCardName');
 
+    // Onboarding Elements
+    const onboardingOverlay = document.getElementById('onboardingOverlay');
+    const onboardingName = document.getElementById('onboardingName');
+    const onboardingSurname = document.getElementById('onboardingSurname');
+    const startOnboardingBtn = document.getElementById('startOnboardingBtn');
+
     // State & Persistence
+    let userFullName = localStorage.getItem('user_fullname') || '';
     let currentBalance = parseFloat(localStorage.getItem('user_balance')) || 12.50;
+
+    // Personalization Function
+    const updatePersonalization = () => {
+        if (userFullName) {
+            displayUserName.textContent = userFullName.split(' ')[0]; // Show only first name in header
+            virtualCardName.textContent = userFullName.toUpperCase();
+        }
+    };
+
+    // Initial Personalization
+    updatePersonalization();
     walletBalance.textContent = currentBalance.toFixed(2);
 
     const saveBalance = (newBalance) => {
@@ -228,9 +246,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // Run immediately on load
     checkUrlParams();
 
+    // --- Onboarding Logic ---
+    const checkOnboarding = () => {
+        if (!userFullName) {
+            onboardingOverlay.style.display = 'flex';
+        }
+    };
+
+    startOnboardingBtn.addEventListener('click', () => {
+        const name = onboardingName.value.trim();
+        const surname = onboardingSurname.value.trim();
+
+        if (!name || !surname) {
+            alert("Per favore, inserisci sia il nome che il cognome.");
+            return;
+        }
+
+        userFullName = `${name} ${surname}`;
+        localStorage.setItem('user_fullname', userFullName);
+
+        updatePersonalization();
+        onboardingOverlay.style.display = 'none';
+
+        // Sensory feedback for success
+        if (navigator.vibrate) navigator.vibrate(50);
+        SoundEngine.playSuccess();
+    });
+
+    checkOnboarding();
+
     // --- Virtual Card Logic ---
     virtualCardBtn.addEventListener('click', () => {
-        virtualCardName.textContent = displayUserName.textContent;
+        updatePersonalization();
         virtualCardBalance.textContent = currentBalance.toFixed(2);
         virtualCardOverlay.classList.add('active');
     });
