@@ -1,4 +1,4 @@
-const CACHE_NAME = 'voltix-v3';
+const CACHE_NAME = 'voltix-v4';
 const ASSETS_TO_CACHE = [
     '/paysim/',
     '/paysim/wallet.html',

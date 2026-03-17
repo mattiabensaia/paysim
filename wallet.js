@@ -187,12 +187,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const peer = new Peer(friendlyId);
 
     peer.on('open', (id) => {
-        myPeerIdDisplay.textContent = id;
-        connStatusIcon.innerHTML = '<i class="fas fa-wifi" style="color: var(--success)"></i>';
+        if (myPeerIdDisplay) myPeerIdDisplay.textContent = id;
+        if (connStatusIcon) connStatusIcon.innerHTML = '<i class="fas fa-wifi" style="color: var(--success)"></i>';
     });
 
     peer.on('connection', (conn) => {
-        connStatusIcon.innerHTML = '<i class="fas fa-link" style="color: var(--accent)"></i>';
+        if (connStatusIcon) connStatusIcon.innerHTML = '<i class="fas fa-link" style="color: var(--accent)"></i>';
         conn.on('data', (data) => {
             if (data.type === 'PAYMENT') processIncomingPayment(data);
         });
