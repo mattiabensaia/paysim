@@ -1,4 +1,40 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // --- Sensory Engines ---
+    const SoundEngine = {
+        ctx: new (window.AudioContext || window.webkitAudioContext)(),
+
+        // Crisp ascending chord for success (Apple Pay style)
+        playSuccess: function () {
+            const now = this.ctx.currentTime;
+            this.playTone(440, now, 0.15);      // A4
+            this.playTone(554.37, now + 0.1, 0.15);  // C#5
+            this.playTone(659.25, now + 0.2, 0.3);   // E5
+        },
+
+        // Quick high-pitch pulse for scan confirmation
+        playScan: function () {
+            this.playTone(880, this.ctx.currentTime, 0.05);
+        },
+
+        playTone: function (freq, start, duration) {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freq, start);
+
+            gain.gain.setValueAtTime(0, start);
+            gain.gain.linearRampToValueAtTime(0.2, start + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.01, start + duration);
+
+            osc.start(start);
+            osc.stop(start + duration);
+        }
+    };
+
     // UI Elements
     const myPeerIdDisplay = document.getElementById('myPeerId');
     const walletBalance = document.getElementById('walletBalance');
@@ -94,7 +130,8 @@ document.addEventListener('DOMContentLoaded', () => {
             displayUserName.textContent = data.customer.split(' ')[0];
         }
 
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+        if (navigator.vibrate) navigator.vibrate([10, 30, 10, 30, 100]); // Premium triple-tap vibration
+        SoundEngine.playSuccess();
 
         setTimeout(() => {
             notificationOverlay.classList.remove('active');
@@ -283,6 +320,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const onScanSuccess = (decodedText) => {
         console.log("[Scanner] QR rilevato:", decodedText);
+
+        // Haptic + Audio Feedback
+        if (navigator.vibrate) navigator.vibrate(30);
+        SoundEngine.playScan();
 
         const getParam = (name) => {
             const regex = new RegExp(`[#?&]${name}=([^&]*)`);
