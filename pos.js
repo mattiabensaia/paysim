@@ -53,19 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    const generateSignature = async (amount, ts) => {
-        const secret = "PAYSIM_SECRET_2026";
-        const message = `${amount}|${ts}|${secret}`;
-        const encoder = new TextEncoder();
-        const data = encoder.encode(message);
-
-        // Use native Web Crypto API for lightweight SHA-256 hashing
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        // Simple hex string mapping
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    };
-
     const updateCalculations = () => {
         const cost = parseFloat(totalCostInput.value) || 0;
         const cash = parseFloat(cashGivenInput.value) || 0;
@@ -77,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
         sendActionBtn.disabled = changeToGive <= 0;
     };
 
-    sendActionBtn.addEventListener('click', async () => {
+    sendActionBtn.addEventListener('click', () => {
         const cost = parseFloat(totalCostInput.value);
         const customer = customerNameInput.value.trim();
 
@@ -89,10 +76,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 2. Always show QR as fallback/alternative
-        await showQrFallback(changeToGive, customer);
+        showQrFallback(changeToGive, customer);
     });
 
-    const showQrFallback = async (amount, customer) => {
+    const showQrFallback = (amount, customer) => {
         // Read public URL from the config field (critical: localhost won't work from phone!)
         const publicUrlInput = document.getElementById('publicUrl');
         let publicBase = publicUrlInput.value.trim();
@@ -100,11 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
         // Remove trailing slash if present
         if (publicBase.endsWith('/')) publicBase = publicBase.slice(0, -1);
 
-        const ts = Date.now().toString();
-        const sig = await generateSignature(amount.toFixed(2), ts); // Ensure amount is formatted for signature
-
-        // Build wallet URL with query params (reliable across all native scanners)
-        const qrUrl = `${publicBase}/wallet.html?amount=${amount.toFixed(2)}&customer=${encodeURIComponent(customer)}&ts=${ts}&sig=${sig}`;
+        // Build wallet URL with query params
+        const qrUrl = `${publicBase}/wallet.html?amount=${amount.toFixed(2)}&customer=${encodeURIComponent(customer)}&ts=${Date.now()}`;
 
         qrcodeDiv.innerHTML = '';
         qrGenerator = new QRCode(qrcodeDiv, {
