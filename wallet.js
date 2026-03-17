@@ -68,11 +68,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const connStatusIcon = document.getElementById('connStatus');
     const displayUserName = document.getElementById('displayUserName');
 
-    // Virtual Card Elements
     const virtualCardBtn = document.getElementById('virtualCardBtn');
     const virtualCardOverlay = document.getElementById('virtualCardOverlay');
-    const virtualCard = document.querySelector('.virtual-card');
-    const cardShine = document.getElementById('cardShine');
     const closeVirtualCardBtn = document.getElementById('closeVirtualCardBtn');
     const simulateNFCPayBtn = document.getElementById('simulateNFCPayBtn');
     const virtualCardBalance = document.getElementById('virtualCardBalance');
@@ -277,61 +274,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     checkOnboarding();
 
-    // --- Virtual Card Logic & 3D Parallax ---
-    let sensorActive = false;
-
-    const handleOrientation = (event) => {
-        if (!virtualCardOverlay.classList.contains('active')) return;
-
-        // Beta: X-axis (tilt front-to-back), Gamma: Y-axis (tilt left-to-right)
-        let x = event.beta;
-        let y = event.gamma;
-
-        // Normalizing for a natural feel (device held upright-ish)
-        // Adjusting center point (typical 45-60 degree hold)
-        const tiltX = Math.max(-20, Math.min(20, (x - 50) / 1.5));
-        const tiltY = Math.max(-20, Math.min(20, y / 1.5));
-
-        // Apply rotation to card
-        virtualCard.style.transform = `rotateX(${-tiltX}deg) rotateY(${tiltY}deg)`;
-
-        // Move shine gradient
-        const px = 50 + (tiltY * 2.5);
-        const py = 50 + (tiltX * 2.5);
-        cardShine.style.background = `radial-gradient(circle at ${px}% ${py}%, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 80%)`;
-    };
-
-    const requestSensorPermission = async () => {
-        if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-            try {
-                const permissionState = await DeviceOrientationEvent.requestPermission();
-                if (permissionState === 'granted') {
-                    window.addEventListener('deviceorientation', handleOrientation);
-                    sensorActive = true;
-                }
-            } catch (error) {
-                console.error('Sensor permission failed:', error);
-            }
-        } else {
-            // Non-iOS or older browsers
-            window.addEventListener('deviceorientation', handleOrientation);
-            sensorActive = true;
-        }
-    };
-
+    // --- Virtual Card Logic ---
     virtualCardBtn.addEventListener('click', () => {
         updatePersonalization();
         virtualCardBalance.textContent = currentBalance.toFixed(2);
         virtualCardOverlay.classList.add('active');
-
-        // Request sensors on first open
-        if (!sensorActive) requestSensorPermission();
     });
 
     closeVirtualCardBtn.addEventListener('click', () => {
         virtualCardOverlay.classList.remove('active');
-        // Reset transform
-        virtualCard.style.transform = 'translateY(20px) rotateX(0) rotateY(0)';
     });
 
     simulateNFCPayBtn.addEventListener('click', () => {
