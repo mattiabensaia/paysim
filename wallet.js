@@ -88,8 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const addTransaction = (amount, sender) => {
-        const amt = parseFloat(amount);
-        const isExpense = amt < 0;
+        let amt = parseFloat(amount);
+        if (isNaN(amt)) return;
+
+        const isExpense = amt < 0 || (sender && (sender.includes("Spesa") || sender.includes("Pagamento")));
         const now = new Date();
         const timeString = now.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
 
@@ -101,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="tx-title">${isExpense ? sender : 'Resto da ' + (sender || 'Cassa')}</div>
                 <div class="tx-time">Oggi, ${timeString}</div>
             </div>
-            <div class="tx-amount ${isExpense ? 'negative' : 'positive'}">${isExpense ? '' : '+'}${amt.toFixed(2)} €</div>
+            <div class="tx-amount ${isExpense ? 'negative' : 'positive'}">${isExpense ? '-' : '+'}${Math.abs(amt).toFixed(2)} €</div>
         `;
         transactionList.insertBefore(txDiv, transactionList.firstChild);
 
@@ -111,13 +113,18 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('tx_history', JSON.stringify(history.slice(0, 10)));
     };
 
-    // Load History
+    // Load History with Sanitization
     const loadHistory = () => {
-        transactionList.innerHTML = ''; // Clear current list
-        const history = JSON.parse(localStorage.getItem('tx_history') || '[]');
+        transactionList.innerHTML = '';
+        let history = JSON.parse(localStorage.getItem('tx_history') || '[]');
+
         history.forEach(tx => {
-            const amt = parseFloat(tx.amount);
-            const isExpense = amt < 0;
+            let amt = parseFloat(tx.amount);
+            if (isNaN(amt)) return;
+
+            // Robust check: negative number OR contains expense keywords
+            const isExpense = amt < 0 || (tx.sender && (tx.sender.includes("Spesa") || tx.sender.includes("Pagamento")));
+
             const txDiv = document.createElement('div');
             txDiv.className = 'transaction-item';
             txDiv.innerHTML = `
@@ -126,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="tx-title">${isExpense ? tx.sender : 'Resto da ' + (tx.sender || 'Cassa')}</div>
                     <div class="tx-time">Oggi, ${tx.time}</div>
                 </div>
-                <div class="tx-amount ${isExpense ? 'negative' : 'positive'}">${isExpense ? '' : '+'}${amt.toFixed(2)} €</div>
+                <div class="tx-amount ${isExpense ? 'negative' : 'positive'}">${isExpense ? '-' : '+'}${Math.abs(amt).toFixed(2)} €</div>
             `;
             transactionList.appendChild(txDiv);
         });
