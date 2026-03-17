@@ -85,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // State & Persistence
     let userFullName = localStorage.getItem('user_fullname') || '';
     let currentBalance = parseFloat(localStorage.getItem('user_balance')) || 12.50;
+    let cardTheme = localStorage.getItem('virtual_card_theme') || 'theme-purple';
 
     // Personalization Function
     const updatePersonalization = () => {
@@ -92,6 +93,20 @@ document.addEventListener('DOMContentLoaded', () => {
             displayUserName.textContent = userFullName.split(' ')[0]; // Show only first name in header
             virtualCardName.textContent = userFullName.toUpperCase();
         }
+
+        // Apply theme to the card element
+        const cardElement = document.querySelector('.virtual-card');
+        if (cardElement) {
+            // Remove all existing theme classes first
+            cardElement.classList.remove('theme-purple', 'theme-black', 'theme-gold', 'theme-lime');
+            // Then add the current one
+            cardElement.classList.add(cardTheme);
+        }
+
+        // Update dot states
+        document.querySelectorAll('.theme-dot').forEach(dot => {
+            dot.classList.toggle('active', dot.dataset.theme === cardTheme);
+        });
     };
 
     // Initial Personalization
@@ -271,6 +286,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sensory feedback for success
         if (navigator.vibrate) navigator.vibrate(50);
         SoundEngine.playSuccess();
+    });
+
+    // Theme Selection Logic
+    document.querySelectorAll('.theme-dot').forEach(dot => {
+        dot.addEventListener('click', () => {
+            cardTheme = dot.dataset.theme;
+            localStorage.setItem('virtual_card_theme', cardTheme);
+            updatePersonalization();
+            if (navigator.vibrate) navigator.vibrate(20);
+        });
     });
 
     checkOnboarding();
